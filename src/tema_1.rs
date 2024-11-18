@@ -158,9 +158,23 @@ pub trait Tema1: default_issue_callbacks::DefaultIssueCallbacksModule {
 
     }
 
-    // Private helper functions
+
     #[only_owner]
-    #[endpoint(sendNftToCaller)]
+    #[endpoint(sendNftToOwner)]
+    fn send_nft_to_owner(&self, nonce: u64) {
+        require!(!self.token_id().is_empty(), "NFT not issued");
+        require!(nonce > 0, "NFTs can't have a nonce of 0");
+        require!(nonce <= self.nft_supply().len() as u64, "NFT not found");
+
+
+        self.send_nft_to_caller(nonce);
+    }
+
+    // Private helper functions
+
+
+
+
     fn send_nft_to_caller(
         &self,
         nonce: u64

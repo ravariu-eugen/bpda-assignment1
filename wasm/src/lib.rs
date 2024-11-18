@@ -24,7 +24,7 @@ multiversx_sc_wasm_adapter::endpoints! {
         createNftWithAttributes => create_nft_with_attributes
         getYourNftCardProperties => get_your_nft_card_properties
         exchangeNft => exchange_nft
-        sendNftToCaller => send_nft_to_caller
+        sendNftToOwner => send_nft_to_owner
         getTokenId => get_token_id
         getTokenData => get_token_data
         tokenId => token_id
