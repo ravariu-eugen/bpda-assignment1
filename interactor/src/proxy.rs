@@ -139,6 +139,19 @@ where
             .original_result()
     }
 
+    pub fn send_nft_to_caller<
+        Arg0: ProxyArg<u64>,
+    >(
+        self,
+        nonce: Arg0,
+    ) -> TxTypedCall<Env, From, To, NotPayable, Gas, ()> {
+        self.wrapped_tx
+            .payment(NotPayable)
+            .raw_call("sendNftToCaller")
+            .argument(&nonce)
+            .original_result()
+    }
+
     pub fn get_token_id(
         self,
     ) -> TxTypedCall<Env, From, To, NotPayable, Gas, TokenIdentifier<Env::Api>> {
@@ -212,7 +225,7 @@ where
 }
 
 #[type_abi]
-#[derive(TopEncode, TopDecode, Debug)]
+#[derive(TopEncode, TopDecode)]
 pub struct CardProperties {
     pub class: Class,
     pub rarity: Rarity,
@@ -220,7 +233,7 @@ pub struct CardProperties {
 }
 
 #[type_abi]
-#[derive(TopEncode, TopDecode, NestedDecode , NestedEncode, Debug)]
+#[derive(TopEncode, TopDecode)]
 pub enum Class {
     Warrior,
     Mage,
@@ -234,7 +247,7 @@ pub enum Class {
 }
 
 #[type_abi]
-#[derive(TopEncode, TopDecode, NestedDecode, NestedEncode, Debug)]
+#[derive(TopEncode, TopDecode)]
 pub enum Rarity {
     Common,
     Rare,
@@ -243,7 +256,7 @@ pub enum Rarity {
 }
 
 #[type_abi]
-#[derive(TopEncode, TopDecode, NestedDecode, NestedEncode, Debug)]
+#[derive(TopEncode, TopDecode)]
 pub enum Power {
     Low,
     Medium,

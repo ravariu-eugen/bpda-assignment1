@@ -159,7 +159,8 @@ pub trait Tema1: default_issue_callbacks::DefaultIssueCallbacksModule {
     }
 
     // Private helper functions
-
+    #[only_owner]
+    #[endpoint(sendNftToCaller)]
     fn send_nft_to_caller(
         &self,
         nonce: u64
