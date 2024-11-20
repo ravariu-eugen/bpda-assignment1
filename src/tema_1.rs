@@ -158,7 +158,8 @@ pub trait Tema1: default_issue_callbacks::DefaultIssueCallbacksModule {
 
     }
 
-
+    /// sends the NFT with the given nonce to the owner
+    /// added by me for completing the assignment
     #[only_owner]
     #[endpoint(sendNftToOwner)]
     fn send_nft_to_owner(&self, nonce: u64) {

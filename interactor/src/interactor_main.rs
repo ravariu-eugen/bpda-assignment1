@@ -4,7 +4,6 @@ mod proxy;
 
 use multiversx_sc_snippets::imports::*;
 use multiversx_sc_snippets::sdk;
-use multiversx_sc_snippets::sdk::data::address;
 use proxy::CardProperties;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -31,8 +30,6 @@ async fn main() {
         "solve" => solve().await,
         "upgrade" => interact.upgrade().await,
         //"issueNft" => interact.issue_nft().await,
-        "setup" => setupTest().await,
-        "test" => testSolve().await,
         //"createNftWithAttributes" => interact.create_nft_with_attributes().await,
         "getYourNftCardProperties" => _=interact.get_your_nft_card_properties().await,
         //"exchangeNft" => interact.exchange_nft().await,
@@ -49,17 +46,15 @@ async fn main() {
     }
 }
 
-async fn setTestSCAddress() {
-    println!("setTestSCAddress");
-    setAddress("erd1qqqqqqqqqqqqqpgqnhyf5lxnz9ajxr9mpzptmgzan2t2qau5ryrsffvgsp").await;
-}
 
+/// sets the smart contract address to the one used for completing the assignment
 async fn setRealSCAddress() {
     println!("setRealSCAddress");
     setAddress("erd1qqqqqqqqqqqqqpgqrqz7r8yl5dav2z0fgnn302l2w7xynygruvaq76m26j").await;
 
 }
 
+/// sets the interactor contract address
 async fn setAddress(address: &str) {
     let mut interact = ContractInteract::new().await;
     interact.state.set_address(Bech32Address::from_bech32_string(address.to_string()));
@@ -67,32 +62,14 @@ async fn setAddress(address: &str) {
 }
 async fn solve() {
 
-    /*Get Your Assigned NFT: Call the getYourNftCardProperties endpoint to receive the properties of the NFT you have to trade with. The properties you receive are hex encoded.
-    Example: Let's say you receive the following hex encoded properties: 020304
-    Each of the bytes corresponds to one of the attributes (class, rarity, power), and they all have the same length. Each byte corresponds to the index of the enum variant of that attribute.
-    */
-
-
-    /*Query Smart Contract Data: Query the smart contract for available NFTs and their metadata, parse the metadata and then get the NFT's nonce. You will need the nonce for the exchange part. The nonce is equal to the position of the metadata in the returned list.
-    Note: The vector indexing starts from 1.
-    Function to call: See the nftSupply view function inside the SC.
-    Return: A list of NFTs with details such as token ID, rarity, class, power.
-    Note: Check out this link on how NFT properties are serialized inside the list of returned NFTs.
-    */
-
-    /*Exchange NFTs: Implement a function to exchange an NFT with another user. This simulates a trading card game scenario where players exchange cards.
-    Function to call: See the exchangeNFT(nonce) inside the SC.
-    Requirements: Make sure the NFT you are going to send has your moodle ID as name and the exact attributes as the one you are trying to trade with.
-    Note: The collection name and other fields are irrelevant.
-    */
-
-
 
     // get the required card
 
     setRealSCAddress().await;
     let mut interact = ContractInteract::new().await;
     let card_properties = interact.get_your_nft_card_properties().await;
+
+    // parse the card properties into integers
     let class = match card_properties.class {
         proxy::Class::Warrior => 0,
         proxy::Class::Mage => 1,
@@ -119,12 +96,13 @@ async fn solve() {
         proxy::Power::High => 2,
     };
 
-
+    // create the properties hex string
+    let hex_properties = format!("0x{:02x}{:02x}{:02x}", class, rarity, power);
+    println!("Hex Properties: {}", hex_properties);
 
 
     // get the nft nonce
-    let hex_properties = format!("0x{:02x}{:02x}{:02x}", class, rarity, power);
-    println!("Hex Properties: {}", hex_properties);
+    
     let attributes =interact.nft_supply().await;
     let nonce = attributes.iter().position(|x| x == &hex_properties).unwrap() as u64 + 1;
     println!("Nonce: {}", nonce);
@@ -134,21 +112,15 @@ async fn solve() {
 
     getNft("ravariu.eugen", class, rarity, power).await;
     
-    
-    //interact.exchange_nft(nonce).await;
 }
 
-
+/// execute the exchange with the token id taken from the multiversx explorer and the nonce obtained from the solve function
 async fn execute_swap() {
     setRealSCAddress().await;
     let mut interact = ContractInteract::new().await;
     interact.exchange_nft("BPDAR-9be2d0".to_string(), 55).await;
 }
 
-async fn testSolve() {
-    //setupTest().await;
-    solve().await;
-}
 
 async fn issueTestNFT() {
     let mut interact = ContractInteract::new().await;
@@ -162,18 +134,7 @@ async fn issueTestNFT() {
     println!("----------");
 }
 
-async fn createTestNFTs() {
-    let mut interact = ContractInteract::new().await;
-    let attributes = vec![("name1", 1, 2, 2)];
 
-    for (name, class, rarity, power) in attributes {
-        println!("Creating NFT: {} class={} rarity={} power={}", name, class, rarity, power);
-        interact.create_nft_with_attributes(name.to_string(), class, rarity, power).await;
-        println!("----------");
-        println!("Created NFT: {} class={} rarity={} power={}", name, class, rarity, power);
-        println!("----------");
-    }
-}
 
 async fn createUserNft(name : &str, class : u8, rarity : u8, power : u8){
     println!("Creating NFT: {} class={} rarity={} power={}", name, class, rarity, power);
@@ -182,6 +143,8 @@ async fn createUserNft(name : &str, class : u8, rarity : u8, power : u8){
 
 }
 
+/// obtains the necessary nft by deploying a modified version of the contract that can create the nft 
+/// and send it back to my wallet;
 async fn getNft(name : &str, class : u8, rarity : u8, power : u8){
     let mut interactor = ContractInteract::new().await;
     // deploy sc
@@ -191,35 +154,16 @@ async fn getNft(name : &str, class : u8, rarity : u8, power : u8){
 
     issueTestNFT().await;
     
-    // create several nfts
+    // create the nft
     println!("Creating NFTs...");
     createUserNft(name, class, rarity, power).await;
 
+    // send the nft
     interactor.send_nft_to_owner(1).await;
 }
 
 
-async fn issueUserNFT() {
-    let mut interact = ContractInteract::new().await;
-    let token_display_name = "BPDARavariu";
-    let token_ticker = "BPDAR";
-    interact.issue_nft(50_000_000_000_000_000, token_display_name.to_string(), token_ticker.to_string()).await;
-    println!("----------");
-    println!("Issued NFT: {} {}", token_display_name, token_ticker);
-    println!("----------");
-}
 
-async fn setupTest() {
-    
-    createUserNft("name1", 1, 2, 2).await; 
-
-
-
-    
-
-
-
-}
 #[derive(Debug, Default, Serialize, Deserialize)]
 struct State {
     contract_address: Option<Bech32Address>
