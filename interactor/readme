@@ -1,0 +1,13 @@
+Steps for solving the assignment:
+1. run "cargo run solve"
+    1. Ask for the required card properties using "getYourNftCardProperties"
+    2. Parse the card properties into a hex string
+    3. Query for the list of NFTs using "nftSupply"
+    4. Find the nonce of required card
+    5. Deploy a modified version of the assignment SC, that has the "sendNftToOwner" endpoint, 
+        which will send into my wallet the nft with the requested nonce.
+    6. Create an NFT with the required properties using "createNftWithAttributes"
+2. view the token id of the received NFT in the MultiversX wallet dashboard
+3. put the token id and the nonce obtained at 1.4 in the "execute_swap()" function
+4. run "cargo run swap"
+    1. Exchange the NFT that I created with the assignment SC NFT 
